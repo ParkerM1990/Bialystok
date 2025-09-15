@@ -35,7 +35,10 @@
 
 <div id="filter">
   <label>Wybierz strefy:</label><br/>
-  <select id="strefaSelect" multiple size="5"></select>
+  <select id="strefaSelect" multiple size="5"></select><br/><br/>
+  
+  <label>Wybierz trasę:</label><br/>
+  <select id="trasaSelect" multiple size="5"></select>
 </div>
 
 <div id="map"></div>
@@ -95,9 +98,11 @@ document.addEventListener('DOMContentLoaded', function () {
         lon: parseFloat((row['X']||'0').replace(',','.')),
         lat: parseFloat((row['Y']||'0').replace(',','.')),
         adres: String(row['Adres']||'').trim(),
-        strefa: String(row['Strefa']||'Brak').trim()
+        strefa: String(row['Strefa']||'Brak').trim(),
+        trasa: String(row['Trasa']||'Brak').trim()   // NOWE POLE
       }));
       updateStrefy();
+      updateTrasy();
       updateMarkers();
       createSidebar();
       loadZdemontowane();
@@ -136,13 +141,23 @@ document.addEventListener('DOMContentLoaded', function () {
     select.addEventListener('change',()=>{ updateMarkers(); createSidebar(); });
   }
 
+  function updateTrasy(){
+    const trasy = [...new Set(parkomatyData.map(p=>p.trasa))].sort();
+    const select = document.getElementById('trasaSelect'); select.innerHTML='';
+    trasy.forEach(t=>{ const option=document.createElement('option'); option.value=t; option.text=t; select.appendChild(option); });
+    select.addEventListener('change',()=>{ updateMarkers(); createSidebar(); });
+  }
+
   function updateMarkers(){
     const selectedStrefy = Array.from(document.getElementById('strefaSelect').selectedOptions).map(o=>o.value);
+    const selectedTrasy = Array.from(document.getElementById('trasaSelect').selectedOptions).map(o=>o.value);
+
     parkomatyData.forEach(p=>{
       const kod = (p.kod||'').toUpperCase().trim();
       const numer = (p.numer||'').toUpperCase().trim();
       if(!kod && !numer) return;
-      if(selectedStrefy.length>0 && !selectedStrefy.includes(p.strefa)) {
+      if((selectedStrefy.length>0 && !selectedStrefy.includes(p.strefa)) ||
+         (selectedTrasy.length>0 && !selectedTrasy.includes(p.trasa))) {
         const key = kod+'_'+numer;
         if(markersMap[key]) { mapa.removeLayer(markersMap[key]); delete markersMap[key]; }
         return;
@@ -157,7 +172,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const popup = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
 <b>Adres:</b> ${p.adres}<br/>
-<b>Strefa:</b> ${p.strefa}` +
+<b>Strefa:</b> ${p.strefa}<br/>
+<b>Trasa:</b> ${p.trasa}` +
 (fotoDem ? `<br><a href="${fotoDem}" target="_blank">
 <img src="${fotoDem}" style="width:100px; height:auto; cursor:pointer;" referrerpolicy="no-referrer" alt="Zdjęcie demontażu">
 </a>` : '') +
