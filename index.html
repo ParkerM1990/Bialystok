@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <title>Mapa Parkomatów - Wyszukiwanie</title>
+  <title>Mapa Parkomatów Białystok - Wyszukiwanie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -62,7 +62,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const mapa = L.map("map", { minZoom:10, maxZoom:18, bounceAtZoomLimits:false, touchZoom:true }).setView([53.13079143385962, 23.167159526429757], 14);
+  const mapa = L.map("map", { minZoom:10, maxZoom:18, bounceAtZoomLimits:false, touchZoom:true }).setView([53.13079143385962, 23.167159526429757], 15);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(mapa);
 
   let parkomatyData = [], fundamentyId = [], zdemontowaneId = [], markersMap = {}, zdemontowaneFoto = {}, fundamentyFoto = {}, locationMarker = null;
