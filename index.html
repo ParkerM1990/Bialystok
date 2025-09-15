@@ -62,7 +62,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const mapa = L.map("map", { minZoom:10, maxZoom:18, bounceAtZoomLimits:false, touchZoom:true }).setView([52.2297, 21.0122], 13);
+  const mapa = L.map("map", { minZoom:10, maxZoom:18, bounceAtZoomLimits:false, touchZoom:true }).setView([53.13079143385962, 23.167159526429757], 13);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(mapa);
 
   let parkomatyData = [], fundamentyId = [], zdemontowaneId = [], markersMap = {}, zdemontowaneFoto = {}, fundamentyFoto = {}, locationMarker = null;
