@@ -149,43 +149,63 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateMarkers(){
-    const selectedStrefy = Array.from(document.getElementById('strefaSelect').selectedOptions).map(o=>o.value);
-    const selectedTrasy = Array.from(document.getElementById('trasaSelect').selectedOptions).map(o=>o.value);
+  const selectedStrefy = Array.from(document.getElementById('strefaSelect').selectedOptions).map(o=>o.value);
+  const selectedTrasy = Array.from(document.getElementById('trasaSelect').selectedOptions).map(o=>o.value);
 
-    parkomatyData.forEach(p=>{
-      const kod = (p.kod||'').toUpperCase().trim();
-      const numer = (p.numer||'').toUpperCase().trim();
-      if(!kod && !numer) return;
-      if((selectedStrefy.length>0 && !selectedStrefy.includes(p.strefa)) ||
-         (selectedTrasy.length>0 && !selectedTrasy.includes(p.trasa))) {
-        const key = kod+'_'+numer;
-        if(markersMap[key]) { mapa.removeLayer(markersMap[key]); delete markersMap[key]; }
-        return;
-      }
+  parkomatyData.forEach(p=>{
+    const kod = (p.kod||'').toUpperCase().trim();
+    const numer = (p.numer||'').toUpperCase().trim();
+    if(!kod && !numer) return;
 
-      const isFundament = fundamentyId.includes(kod) || fundamentyId.includes(numer);
-      const isZdemontowany = zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer);
-      const kolor = isFundament?'black':isZdemontowany?'red':'green';
+    if((selectedStrefy.length>0 && !selectedStrefy.includes(p.strefa)) ||
+       (selectedTrasy.length>0 && !selectedTrasy.includes(p.trasa))) {
+      const key = kod+'_'+numer;
+      if(markersMap[key]) { mapa.removeLayer(markersMap[key]); delete markersMap[key]; }
+      return;
+    }
 
-      const fotoDem = zdemontowaneFoto[kod] || zdemontowaneFoto[numer] || '';
-      const fotoFund = fundamentyFoto[kod] || fundamentyFoto[numer] || '';
+    const isFundament = fundamentyId.includes(kod) || fundamentyId.includes(numer);
+    const isZdemontowany = zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer);
+    const kolor = isFundament?'black':isZdemontowany?'red':'green';
 
-      const popup = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
+    const fotoDem = zdemontowaneFoto[kod] || zdemontowaneFoto[numer] || '';
+    const fotoFund = fundamentyFoto[kod] || fundamentyFoto[numer] || '';
+
+    let popup = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
 <b>Adres:</b> ${p.adres}<br/>
 <b>Strefa:</b> ${p.strefa}<br/>
-<b>Trasa:</b> ${p.trasa}` +
-(fotoDem ? `<br><a href="${fotoDem}" target="_blank">
+<b>Trasa:</b> ${p.trasa}`;
+
+    if(fotoDem){
+      popup += `<br><a href="${fotoDem}" target="_blank">
 <img src="${fotoDem}" style="width:100px; height:auto; cursor:pointer;" referrerpolicy="no-referrer" alt="Zdjęcie demontażu">
-</a>` : '') +
-(fotoFund ? `<br><a href="${fotoFund}" target="_blank">
+</a>`;
+    }
+    if(fotoFund){
+      popup += `<br><a href="${fotoFund}" target="_blank">
 <img src="${fotoFund}" style="width:100px; height:auto; cursor:pointer;" referrerpolicy="no-referrer" alt="Zdjęcie fundamentu">
-</a>` : '');
-      
-      const key = kod+'_'+numer;
-      if(markersMap[key]) { markersMap[key].setStyle({color:kolor}); markersMap[key].bindPopup(popup); }
-      else { const marker=L.circleMarker([p.lat,p.lon],{radius:8,color:kolor,fillOpacity:0.8}).addTo(mapa); marker.bindPopup(popup); markersMap[key]=marker; }
-    });
-  }
+</a>`;
+    }
+
+    // Dodajemy przycisk tylko dla aktywnych parkomatów (zielonych)
+    if(!isZdemontowany && !isFundament){
+      const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${numer}`;
+      popup += `<br><button onclick="window.open('${formUrl}','_blank')"
+        style="margin-top:5px;padding:5px 10px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
+        Wgraj zdjęcie w demontażu</button>`;
+    }
+
+    const key = kod+'_'+numer;
+    if(markersMap[key]){
+      markersMap[key].setStyle({color:kolor});
+      markersMap[key].bindPopup(popup);
+    } else {
+      const marker = L.circleMarker([p.lat,p.lon],{radius:8,color:kolor,fillOpacity:0.8}).addTo(mapa);
+      marker.bindPopup(popup);
+      markersMap[key]=marker;
+    }
+  });
+}}
 
   function createSidebar(filter=''){
     const container=document.getElementById('sidebarContent'); container.innerHTML='';
