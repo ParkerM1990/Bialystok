@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let parkomatyData = [], fundamentyId = [], zdemontowaneId = [], markersMap = {}, zdemontowaneFoto = {}, fundamentyFoto = {}, locationMarker = null;
 
   const fundamentyUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBVT8MoLx1Zaft1gTfqkWwdoSqDBKiUk8IFI7-D4NxriMKWsPSJdfayhncS21HaNj7Eg7Y0pGrr0oE/pub?output=csv';
-  const zdemontowaneUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRtVA5KWhFAp6bRgBFQH-oDmJgGlbzj3F91-vw1wvTKMCwpO-DjRZ3JoopFm2UarhmInDFPcUzPhz1D/pub?gid=1398714071&single=true&output=csv';
+  const zdemontowaneUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpIgOgu2PJ_0gg2SrawFEuG-tBWVjpbdcJaI9UUDxFPWyVmkxpC1l0Lllljt-eDW3LpzQSjQNrLwiR/pub?output=csv';
   const parkomatyUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRm_NqjXOzGn79rhxRh1oomYWzC9BJTBlZbHknZgAR5O1Q4RNC8FV5VMc6riiaqk0iQ2WbyKnZUshZ9/pub?output=csv';
 
   function fixMapResize(){ setTimeout(()=>{ mapa.invalidateSize(); },300); }
@@ -113,8 +113,8 @@ document.addEventListener('DOMContentLoaded', function () {
     Papa.parse(zdemontowaneUrl, { download:true, header:true, complete:function(results){
       zdemontowaneId=[]; zdemontowaneFoto={};
       results.data.forEach(row=>{
-        const id = String(row['Numer zdemontowanego parkomatu np. Z180512 albo O050123']||'').toUpperCase().trim();
-        const link = row['Zdjęcie parkomatu z numerem'];
+        const id = String(row['Numer zdemontowanego parkomatu np. 52']||'').toUpperCase().trim();
+        const link = row['Zdjęcie parkomatu i fundamentu'];
         if(id) { zdemontowaneId.push(id); if(link && link.includes("open?id=")){ const imgId = link.split("id=")[1]; zdemontowaneFoto[id] = `https://drive.google.com/thumbnail?id=${imgId}&sz=w500`; } }
       });
       updateMarkers();
