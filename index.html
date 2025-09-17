@@ -187,10 +187,10 @@ document.addEventListener('DOMContentLoaded', function () {
 </a>`;
     }
 
-    // Przyciski tylko dla aktywnych parkomatów
+    // Tylko dla aktywnych parkomatów (zielonych) – dodajemy przycisk
     if(!isZdemontowany && !isFundament){
       const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${numer}`;
-      popupContent += `<br><button class="upload-btn" data-url="${formUrl}" 
+      popupContent += `<br><button class="upload-btn" data-url="${formUrl}"
         style="margin-top:5px;padding:5px 10px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
         Wgraj zdjęcie w demontażu</button>`;
     }
@@ -198,21 +198,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const key = kod+'_'+numer;
     if(markersMap[key]){
       markersMap[key].setStyle({color:kolor});
-      markersMap[key].bindPopup(popupContent).openPopup();
+      markersMap[key].bindPopup(popupContent);
     } else {
       const marker = L.circleMarker([p.lat,p.lon],{radius:8,color:kolor,fillOpacity:0.8}).addTo(mapa);
       marker.bindPopup(popupContent);
       markersMap[key]=marker;
     }
   });
-
-  // Dodajemy event listener do przycisków po dodaniu popupów
-  setTimeout(()=>{
-    document.querySelectorAll('.upload-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=> window.open(btn.dataset.url, '_blank'));
-    });
-  }, 500);
 }
+
+// Dodajemy event globalny do obsługi przycisku w popupie
+mapa.on('popupopen', function(e) {
+  const popupNode = e.popup.getElement();
+  const btn = popupNode.querySelector('.upload-btn');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      window.open(btn.dataset.url, '_blank');
+    });
+  }
+});
 
   function createSidebar(filter=''){
     const container=document.getElementById('sidebarContent'); container.innerHTML='';
