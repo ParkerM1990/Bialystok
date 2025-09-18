@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Papa.parse(fundamentyUrl, { download:true, header:true, complete: results => {
       fundamentyId = [];
       results.data.forEach(row=>{
-        const id = String(row['Numer odtworzonego fundamentu  np. A010123 albo 1050123']||'').toUpperCase().trim();
+        const id = String(row['Numer parkomatu']||'').toUpperCase().trim();
         if(id) fundamentyId.push(id);
       });
       updateMarkers();
