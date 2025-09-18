@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Aktywny parkomat - dwa linki
       if(kolor === 'green'){
         const formKolekcja = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-        popupContent += `<br><a href="${formKolekcja}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none;">📦 Wykonana kolekcja</a>`;
+        popupContent += `<br><a href="${formKolekcja}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none; display:block; margin-bottom:4px;">📦 Wykonana kolekcja</a>`;
         const formZdjecie = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
         popupContent += `<br><a href="${formZdjecie}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
       }
