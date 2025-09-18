@@ -1,44 +1,32 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mapa Parkomatów Białystok - Wyszukiwanie</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <style>
-    html, body { height: 100%; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
-    #refreshBtn { position: absolute; bottom: 120px; left: 10px; z-index:1001; background:#007bff; color:#fff; border:none; padding:10px; cursor:pointer; border-radius:5px; }
-    .legend { position: absolute; bottom: 30px; left: 10px; background: rgba(255,255,255,0.95); padding:10px; border-radius:5px; font-size:14px; line-height:18px; color:#333; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.25); }
-    .legend div { display:flex; align-items:center; margin-bottom:4px; }
-    .legend div span { width:18px; height:18px; margin-right:8px; display:inline-block; border-radius:3px; }
-    #filter { position:absolute; top:10px; right:10px; background: rgba(255,255,255,0.95); padding:10px; border-radius:6px; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.25); }
-    #sidebarToggle { position:absolute; top:10px; left:110px; z-index:1101; background:#007bff; color:#fff; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:18px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
-    #sidebar { position:absolute; top:0; left:0; bottom:0; width:320px; background: rgba(255,255,255,0.98); z-index:1100; overflow-y:auto; padding:12px; box-shadow:2px 0 8px rgba(0,0,0,0.15); transform: translateX(-100%); transition: transform 0.28s ease; }
-    #sidebar.open { transform: translateX(0); }
-    #sidebarHeader { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-    #sidebarSearch { width:100%; padding:8px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px; font-size:14px; }
-    .strefa-group { margin-bottom:8px; }
-    .strefa-header { font-weight:bold; cursor:pointer; background:#f1f1f1; padding:6px; border-radius:4px; }
-    .parkomat-link { padding-left:10px; cursor:pointer; margin:4px 0; }
-    .parkomat-link:hover { text-decoration:underline; }
-    .parkomat-link.active { background:#007bff; color:#fff; border-radius:3px; padding:2px 6px; display:inline-block; }
-    .parkomat-label {
-      background: rgba(255,255,255,0.9);
-      border: 1px solid #333;
-      border-radius: 4px;
-      padding: 2px 4px;
-      font-size: 12px;
-      font-weight: bold;
-      color: #000;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-    }
-    @media (max-width:700px){
-      #sidebar { width: 260px; }
-      #filter { right: 6px; top:56px; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Mapa Parkomatów Białystok - Wyszukiwanie</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  html, body { height: 100%; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+  #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+  #refreshBtn { position: absolute; bottom: 120px; left: 10px; z-index:1001; background:#007bff; color:#fff; border:none; padding:10px; cursor:pointer; border-radius:5px; }
+  .legend { position: absolute; bottom: 30px; left: 10px; background: rgba(255,255,255,0.95); padding:10px; border-radius:5px; font-size:14px; line-height:18px; color:#333; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.25); }
+  .legend div { display:flex; align-items:center; margin-bottom:4px; }
+  .legend div span { width:18px; height:18px; margin-right:8px; display:inline-block; border-radius:3px; }
+  #filter { position:absolute; top:10px; right:10px; background: rgba(255,255,255,0.95); padding:10px; border-radius:6px; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.25); }
+  #sidebarToggle { position:absolute; top:10px; left:110px; z-index:1101; background:#007bff; color:#fff; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:18px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+  #sidebar { position:absolute; top:0; left:0; bottom:0; width:320px; background: rgba(255,255,255,0.98); z-index:1100; overflow-y:auto; padding:12px; box-shadow:2px 0 8px rgba(0,0,0,0.15); transform: translateX(-100%); transition: transform 0.28s ease; }
+  #sidebar.open { transform: translateX(0); }
+  #sidebarHeader { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  #sidebarSearch { width:100%; padding:8px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px; font-size:14px; }
+  .strefa-group { margin-bottom:8px; }
+  .strefa-header { font-weight:bold; cursor:pointer; background:#f1f1f1; padding:6px; border-radius:4px; }
+  .parkomat-link { padding-left:10px; cursor:pointer; margin:4px 0; }
+  .parkomat-link:hover { text-decoration:underline; }
+  .parkomat-link.active { background:#007bff; color:#fff; border-radius:3px; padding:2px 6px; display:inline-block; }
+  .parkomat-label { background: rgba(255,255,255,0.9); border: 1px solid #333; border-radius: 4px; padding: 2px 4px; font-size: 12px; font-weight: bold; color: #000; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  @media (max-width:700px){ #sidebar { width: 260px; } #filter { right: 6px; top:56px; } }
+</style>
 </head>
 <body>
 
@@ -153,12 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return a.localeCompare(b);
     });
     const sel = document.getElementById('trasaSelect'); sel.innerHTML = '';
-    trasy.forEach(t => { 
-        const opt = document.createElement('option'); 
-        opt.value = t; 
-        opt.textContent = t; 
-        sel.appendChild(opt); 
-    });
+    trasy.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.textContent = t; sel.appendChild(opt); });
   }
 
   document.getElementById('strefaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
@@ -181,10 +164,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if(selectedStrefy.length && !selectedStrefy.includes(p.strefa)) return;
       if(selectedTrasy.length && !selectedTrasy.includes(p.trasa)) return;
 
-      let kolor;
+      // kolorowanie markerów
+      let kolor = 'green'; // domyślnie aktywny
       if (zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer)) kolor='red';
       else if (fundamentyId.includes(kod) || fundamentyId.includes(numer)) kolor='black';
-      else kolor='green';
 
       const fotoDem = zdemontowaneFoto[kod] || zdemontowaneFoto[numer] || '';
       const popupContent = buildPopupContent(p, kolor, fotoDem);
@@ -208,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <b>Trasa:</b> ${p.trasa}`;
 
     if(kolor==='green'){
-      content += `<br><a href="https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none; display:block; margin-bottom:4px;">📦 Wykonana kolekcja</a>`;
+      content += `<br><a href="https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none; display:block; margin-bottom:4px;">📦 Dodaj kolekcje</a>`;
       content += `<br><a href="https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
     }
 
@@ -244,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function () {
         item.className = 'parkomat-link'; 
         item.textContent = `${p.kod} / ${p.numer} — ${p.adres}`;
 
-        // kliknięcie otwiera popup i marker
         item.addEventListener('click', ()=>{
           mapa.setView([p.lat, p.lon], 17);
           const key = (p.kod||'') + '_' + (p.numer||'');
@@ -253,42 +235,34 @@ document.addEventListener('DOMContentLoaded', function () {
           item.classList.add('active');
         });
 
-        // linki w sidebarze
         const kolor = zdemontowaneId.includes(p.kod) || zdemontowaneId.includes(p.numer) ? 'red' :
                        fundamentyId.includes(p.kod) || fundamentyId.includes(p.numer) ? 'black' : 'green';
         const valueForForm = encodeURIComponent(p.numer || p.kod);
         if(kolor==='green'){
           const a1 = document.createElement('a'); a1.href = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-          a1.target='_blank'; a1.textContent='📦 Wykonana kolekcja'; a1.style.display='block';
+          a1.textContent = '📦 Kolekcja'; a1.target="_blank"; a1.style.cssText="margin-left:6px;";
           item.appendChild(a1);
-          const a2 = document.createElement('a'); a2.href = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-          a2.target='_blank'; a2.textContent='📷 Wgraj zdjęcie'; a2.style.display='block';
-          item.appendChild(a2);
-        }
-        if(kolor==='black'){
-          const a = document.createElement('a'); a.href = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-          a.target='_blank'; a.textContent='📷 Wgraj zdjęcie'; a.style.display='block';
-          item.appendChild(a);
         }
 
         list.appendChild(item);
       });
 
-      group.appendChild(header);
-      group.appendChild(list);
-      container.appendChild(group);
-    });
+      group.appendChild(header); group.appendChild(list); container.appendChild(group);
+    }
   }
 
-  document.getElementById('sidebarToggle').addEventListener('click', ()=>document.getElementById('sidebar').classList.add('open'));
-  document.getElementById('sidebarClose').addEventListener('click', ()=>document.getElementById('sidebar').classList.remove('open'));
-  document.getElementById('sidebarSearch').addEventListener('input', e=>createSidebar(e.target.value));
+  document.getElementById('sidebarToggle').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.add('open'); });
+  document.getElementById('sidebarClose').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.remove('open'); });
+  document.getElementById('sidebarSearch').addEventListener('input', ()=>{ createSidebar(document.getElementById('sidebarSearch').value); });
 
-  document.getElementById('refreshBtn').addEventListener('click', ()=>loadParkomaty());
+  document.getElementById('refreshBtn').addEventListener('click', ()=>{
+    loadParkomaty();
+  });
 
   loadParkomaty();
 
 });
 </script>
+
 </body>
 </html>
