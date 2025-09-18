@@ -179,18 +179,25 @@ document.addEventListener('DOMContentLoaded', function () {
 <b>Strefa:</b> ${p.strefa}<br/>
 <b>Trasa:</b> ${p.trasa}`;
 
-      if(isKolekcja){
-        const valueForForm = encodeURIComponent(numer || kod);
-        const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-        popupContent += `<br><a href="${formUrl}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none;">📦 Wykonana kolekcja</a>`;
-      } else if(isZdemontowany){
-        if(fotoDem){
-          popupContent += `<br><a href="${fotoDem}" target="_blank" rel="noopener"><img src="${fotoDem}" style="max-width:180px;height:auto;border-radius:4px;margin-top:6px;"></a>`;
-        }
-      } else {
-        const valueForForm = encodeURIComponent(numer || kod);
-        const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-        popupContent += `<br><a href="${formUrl}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
+      const valueForForm = encodeURIComponent(numer || kod);
+
+      // Aktywny parkomat - dwa linki
+      if(kolor === 'green'){
+        const formKolekcja = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+        popupContent += `<br><a href="${formKolekcja}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none;">📦 Wykonana kolekcja</a>`;
+        const formZdjecie = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+        popupContent += `<br><a href="${formZdjecie}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
+      }
+
+      // Kolekcja - tylko zdjęcie
+      if(kolor === 'black'){
+        const formZdjecie = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+        popupContent += `<br><a href="${formZdjecie}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
+      }
+
+      // Zdemontowany - zdjęcie z CSV
+      if(kolor === 'red' && fotoDem){
+        popupContent += `<br><a href="${fotoDem}" target="_blank" rel="noopener"><img src="${fotoDem}" style="max-width:180px;height:auto;border-radius:4px;margin-top:6px;"></a>`;
       }
 
       const key = kod + '_' + numer;
@@ -234,53 +241,40 @@ document.addEventListener('DOMContentLoaded', function () {
           item.classList.add('active');
         });
 
-        // Dodanie linku do formularza w sidebarze
-        const isKolekcja = fundamentyId.includes(p.kod) || fundamentyId.includes(p.numer);
-        if(isKolekcja){
-          const valueForForm = encodeURIComponent(p.numer || p.kod);
-          const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-          const linkEl = document.createElement('a');
-          linkEl.href = formUrl;
-          linkEl.target = "_blank";
-          linkEl.textContent = "📦 Wykonana kolekcja";
-          linkEl.style.display = "inline-block";
-          linkEl.style.marginLeft = "8px";
-          linkEl.style.color = "#000";
-          item.appendChild(linkEl);
+        // Linki w sidebarze
+        const kolor = fundamentyId.includes(p.kod) || fundamentyId.includes(p.numer) ? 'black' :
+                       zdemontowaneId.includes(p.kod) || zdemontowaneId.includes(p.numer) ? 'red' : 'green';
+        const valueForForm = encodeURIComponent(p.numer || p.kod);
+        if(kolor==='green'){
+          const linkK = document.createElement('a');
+          linkK.href = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+          linkK.target='_blank'; linkK.textContent='📦 Wykonana kolekcja'; linkK.style.display='block'; item.appendChild(linkK);
         }
-
+        if(kolor!=='red'){ // zielony i czarny
+          const linkF = document.createElement('a');
+          linkF.href = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+          linkF.target='_blank'; linkF.textContent='📷 Wgraj zdjęcie z demontażu'; linkF.style.display='block'; item.appendChild(linkF);
+        }
         list.appendChild(item);
       });
 
-      group.appendChild(header);
-      group.appendChild(list);
+      group.appendChild(header); group.appendChild(list);
       container.appendChild(group);
     }
   }
 
-  document.getElementById('sidebarSearch').addEventListener('input', (e)=>{ createSidebar(e.target.value); });
+  document.getElementById('sidebarToggle').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.add('open'); });
+  document.getElementById('sidebarClose').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.remove('open'); });
+  document.getElementById('sidebarSearch').addEventListener('input', e=>{ createSidebar(e.target.value); });
 
-  document.getElementById('sidebarToggle').addEventListener('click', ()=>{ 
-    document.getElementById('sidebar').classList.add('open'); 
-    document.getElementById('sidebar').setAttribute('aria-hidden','false');
-  });
-  document.getElementById('sidebarClose').addEventListener('click', ()=>{ 
-    document.getElementById('sidebar').classList.remove('open'); 
-    document.getElementById('sidebar').setAttribute('aria-hidden','true');
-  });
-
-  document.getElementById('refreshBtn').addEventListener('click', ()=>{ loadParkomaty(); });
-
-  mapa.on('zoomend', ()=>{ 
-    const z = mapa.getZoom();
-    for(const k in markersMap){
-      const m = markersMap[k];
-      if(m.getTooltip()) z<15 ? m.closeTooltip() : m.openTooltip();
-    }
+  document.getElementById('refreshBtn').addEventListener('click', ()=>{
+    loadParkomaty();
+    alert('Dane zostały odświeżone!');
   });
 
   loadParkomaty();
 });
 </script>
+
 </body>
 </html>
