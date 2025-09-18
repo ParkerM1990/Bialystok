@@ -5,260 +5,337 @@
   <title>Mapa Parkomatów Białystok - Wyszukiwanie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; }
+    html, body { height: 100%; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
     #refreshBtn { position: absolute; bottom: 120px; left: 10px; z-index:1001; background:#007bff; color:#fff; border:none; padding:10px; cursor:pointer; border-radius:5px; }
-    .legend { position: absolute; bottom: 30px; left: 10px; background: rgba(255,255,255,0.9); padding:10px; border-radius:5px; font-size:14px; line-height:18px; color:#333; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.4);}
-    .legend div { display:flex; align-items:center;}
-    .legend div span { width:18px; height:18px; margin-right:5px; display:inline-block;}
-    .leaflet-control-zoom {margin-top:60px !important;}
-    #filter { position:absolute; top:10px; right:10px; background: rgba(255,255,255,0.9); padding:10px; border-radius:5px; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.4); margin-bottom:10px;}
-    #sidebarToggle { position:absolute; top:10px; left:10px; z-index:1101; background:#007bff; color:#fff; padding:8px 12px; border-radius:4px; cursor:pointer; font-size:20px; box-shadow:0 2px 4px rgba(0,0,0,0.3);}
-    #sidebar { position:absolute; top:0; left:0; bottom:0; width:280px; background: rgba(255,255,255,0.97); z-index:1100; overflow-y:auto; padding:10px; box-shadow:2px 0 5px rgba(0,0,0,0.3); transform: translateX(-100%); transition: transform 0.3s ease;}
-    #sidebar.open { transform: translateX(0);}
-    #sidebarSearch { width:100%; padding:6px; margin-bottom:10px; border:1px solid #ccc; font-size:16px !important; }
-    .strefa-group { margin-bottom:10px; }
-    .strefa-header { font-weight:bold; margin-top:10px; cursor:pointer; background:#f1f1f1; padding:5px; border-radius:4px; }
-    .parkomat-link { padding-left:10px; cursor:pointer; margin:3px 0; }
+    .legend { position: absolute; bottom: 30px; left: 10px; background: rgba(255,255,255,0.95); padding:10px; border-radius:5px; font-size:14px; line-height:18px; color:#333; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.25); }
+    .legend div { display:flex; align-items:center; margin-bottom:4px; }
+    .legend div span { width:18px; height:18px; margin-right:8px; display:inline-block; border-radius:3px; }
+    #filter { position:absolute; top:10px; right:10px; background: rgba(255,255,255,0.95); padding:10px; border-radius:6px; z-index:1000; box-shadow:0 0 5px rgba(0,0,0,0.25); }
+    #sidebarToggle { position:absolute; top:10px; left:10px; z-index:1101; background:#007bff; color:#fff; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:18px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    #sidebar { position:absolute; top:0; left:0; bottom:0; width:320px; background: rgba(255,255,255,0.98); z-index:1100; overflow-y:auto; padding:12px; box-shadow:2px 0 8px rgba(0,0,0,0.15); transform: translateX(-100%); transition: transform 0.28s ease; }
+    #sidebar.open { transform: translateX(0); }
+    #sidebarHeader { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    #sidebarSearch { width:100%; padding:8px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px; font-size:14px; }
+    .strefa-group { margin-bottom:8px; }
+    .strefa-header { font-weight:bold; cursor:pointer; background:#f1f1f1; padding:6px; border-radius:4px; }
+    .parkomat-link { padding-left:10px; cursor:pointer; margin:4px 0; }
     .parkomat-link:hover { text-decoration:underline; }
-    .parkomat-link.active { background:#007bff; color:#fff; border-radius:3px; padding:2px 4px; }
-    #sidebarHeader { display:flex; justify-content:space-between; align-items:center; font-weight:bold; padding-bottom:10px; }
-    .sidebar-title { display:inline-block; margin-left:50px; }
-    .sidebar-search { display:block; margin-top:30px; }
-    #sidebarClose { background:none; border:none; font-size:20px; cursor:pointer; color:#333; }
+    .parkomat-link.active { background:#007bff; color:#fff; border-radius:3px; padding:2px 6px; display:inline-block; }
+    .parkomat-label {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 2px 4px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #000;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .upload-btn {
+      margin-top:6px;
+      display:inline-block;
+      padding:6px 10px;
+      background:#007bff;
+      color:#fff;
+      border:none;
+      border-radius:4px;
+      cursor:pointer;
+      text-decoration:none;
+      font-size:14px;
+    }
+    /* responsywność */
+    @media (max-width:700px){
+      #sidebar { width: 260px; }
+      #filter { right: 6px; top:56px; }
+    }
   </style>
 </head>
 <body>
 
-<div id="filter">
-  <label>Wybierz strefy:</label><br/>
-  <select id="strefaSelect" multiple size="5"></select><br/><br/>
-  
-  <label>Wybierz trasę:</label><br/>
-  <select id="trasaSelect" multiple size="5"></select>
-</div>
-
-<div id="map"></div>
-<div id="sidebarToggle">☰</div>
-<div id="sidebar">
-  <div id="sidebarHeader">
-    <span class="sidebar-title">📍 Lista parkomatów</span>
-    <button id="sidebarClose">×</button>
+  <div id="filter">
+    <label style="font-weight:bold">Wybierz strefy:</label><br/>
+    <select id="strefaSelect" multiple size="5" style="width:200px;"></select><br/><br/>
+    <label style="font-weight:bold">Wybierz trasę:</label><br/>
+    <select id="trasaSelect" multiple size="5" style="width:200px;"></select>
   </div>
-  <div class="sidebar-search">
-    <input type="text" id="sidebarSearch" placeholder="Szukaj po numerze lub kodzie..." />
+
+  <div id="map"></div>
+
+  <button id="sidebarToggle">☰ Lista</button>
+  <div id="sidebar" aria-hidden="true">
+    <div id="sidebarHeader">
+      <div style="font-weight:bold">📍 Lista parkomatów</div>
+      <button id="sidebarClose" style="background:none;border:none;font-size:18px;cursor:pointer">✖</button>
+    </div>
+    <input id="sidebarSearch" placeholder="Szukaj po numerze lub kodzie..." />
+    <div id="sidebarContent"></div>
   </div>
-  <div id="sidebarContent"></div>
-</div>
 
-<div class="legend">
-  <div><span style="background: green;"></span> Aktywny parkomat</div>
-  <div><span style="background: red;"></span> Zdemontowany parkomat</div>
-</div>
+  <div class="legend" aria-hidden="true">
+    <div><span style="background: green"></span> Aktywny parkomat</div>
+    <div><span style="background: red"></span> Zdemontowany parkomat</div>
+    <div><span style="background: black"></span> Zdemontowane fundamenty</div>
+  </div>
 
-<button id="refreshBtn">Odśwież</button>
+  <button id="refreshBtn" title="Odśwież dane">Odśwież</button>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const mapa = L.map("map", { minZoom:10, maxZoom:18, bounceAtZoomLimits:false, touchZoom:true }).setView([53.13079143385962, 23.167159526429757], 15);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(mapa);
 
-  let parkomatyData = [], fundamentyId = [], zdemontowaneId = [], markersMap = {}, zdemontowaneFoto = {}, fundamentyFoto = {}, locationMarker = null;
-
+  // --- KONFIG ---
   const fundamentyUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBVT8MoLx1Zaft1gTfqkWwdoSqDBKiUk8IFI7-D4NxriMKWsPSJdfayhncS21HaNj7Eg7Y0pGrr0oE/pub?output=csv';
   const zdemontowaneUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpIgOgu2PJ_0gg2SrawFEuG-tBWVjpbdcJaI9UUDxFPWyVmkxpC1l0Lllljt-eDW3LpzQSjQNrLwiR/pub?output=csv';
   const parkomatyUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRm_NqjXOzGn79rhxRh1oomYWzC9BJTBlZbHknZgAR5O1Q4RNC8FV5VMc6riiaqk0iQ2WbyKnZUshZ9/pub?output=csv';
 
-  function fixMapResize(){ setTimeout(()=>{ mapa.invalidateSize(); },300); }
-  window.addEventListener("resize", fixMapResize);
-  window.addEventListener("orientationchange", fixMapResize);
-  document.getElementById("sidebarSearch").addEventListener("focus", fixMapResize);
-  document.getElementById("sidebarSearch").addEventListener("blur", fixMapResize);
+  // Google Form base (do wstępnego wypełnienia)
+  const googleFormBase = 'https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url';
+  const googleFormEntry = 'entry.1756483819'; // Twoje pole "Numer parkomatu"
 
-  function watchLocation() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.watchPosition((pos) => {
-      const { latitude, longitude } = pos.coords;
+  // --- mapa ---
+  const mapa = L.map("map", { minZoom: 10, maxZoom: 18 }).setView([53.130791, 23.167159], 15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(mapa);
+
+  // --- stan ---
+  let parkomatyData = [];
+  let fundamentyId = [];
+  let zdemontowaneId = [];
+  let zdemontowaneFoto = {};
+  let fundamentyFoto = {};
+  let markersMap = {}; // key -> marker
+
+  // helper: extract drive id -> thumbnail or return original
+  function driveThumb(link){
+    if(!link) return '';
+    try {
+      // common patterns: open?id=ID , id=ID , /d/ID/
+      const idMatch = link.match(/(?:open\?id=|id=|\/d\/)([a-zA-Z0-9_-]{10,})/);
+      if(idMatch && idMatch[1]) return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w800`;
+      return link;
+    } catch(e){ return link; }
+  }
+
+  // --- geolokalizacja użytkownika ---
+  let locationMarker = null;
+  function watchLocation(){
+    if(!navigator.geolocation) return;
+    navigator.geolocation.watchPosition(pos=>{
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
       if(locationMarker) mapa.removeLayer(locationMarker);
-      locationMarker = L.circleMarker([latitude, longitude], { radius:10, color:"blue", fillOpacity:0.8 }).addTo(mapa).bindPopup("Twoja lokalizacja");
-    });
+      locationMarker = L.circleMarker([lat, lon], { radius:8, color:'blue', fillOpacity:0.7 }).addTo(mapa).bindPopup('Twoja lokalizacja');
+    }, ()=>{/* ignore */}, { enableHighAccuracy:true });
   }
   watchLocation();
 
-  function loadParkomaty() {
-    Papa.parse(parkomatyUrl, { download:true, header:true, complete:function(results){
+  // --- ładowanie CSV ---
+  function loadParkomaty(){
+    Papa.parse(parkomatyUrl, { download:true, header:true, complete: results => {
       parkomatyData = results.data.map(row => ({
         kod: String(row['Kod']||'').toUpperCase().trim(),
         numer: String(row['Numer']||'').toUpperCase().trim(),
-        lon: parseFloat((row['X']||'0').replace(',','.')),
-        lat: parseFloat((row['Y']||'0').replace(',','.')),
+        lon: parseFloat((row['X']||'0').replace(',','.')) || 0,
+        lat: parseFloat((row['Y']||'0').replace(',','.')) || 0,
         adres: String(row['Adres']||'').trim(),
         strefa: String(row['Strefa']||'Brak').trim(),
-        trasa: String(row['Trasa']||'Brak').trim()   // NOWE POLE
-      }));
+        trasa: String(row['Trasa']||'Brak').trim()
+      })).filter(r => r.lat && r.lon); // odrzucamy nieprawidłowe
       updateStrefy();
       updateTrasy();
-      updateMarkers();
-      createSidebar();
       loadZdemontowane();
     }});
   }
 
-  function loadZdemontowane() {
-    Papa.parse(zdemontowaneUrl, { download:true, header:true, complete:function(results){
-      zdemontowaneId=[]; zdemontowaneFoto={};
+  function loadZdemontowane(){
+    Papa.parse(zdemontowaneUrl, { download:true, header:true, complete: results => {
+      zdemontowaneId = []; zdemontowaneFoto = {};
       results.data.forEach(row=>{
         const id = String(row['Numer zdemontowanego parkomatu np. 52']||'').toUpperCase().trim();
-        const link = row['Zdjęcie parkomatu i fundamentu'];
-        if(id) { zdemontowaneId.push(id); if(link && link.includes("open?id=")){ const imgId = link.split("id=")[1]; zdemontowaneFoto[id] = `https://drive.google.com/thumbnail?id=${imgId}&sz=w500`; } }
+        const link = row['Zdjęcie parkomatu i fundamentu'] || row['Zdjęcie parkomatu z numerem'];
+        if(id){
+          zdemontowaneId.push(id);
+          if(link) zdemontowaneFoto[id] = driveThumb(link);
+        }
       });
-      updateMarkers();
       loadFundamenty();
     }});
   }
 
-  function loadFundamenty() {
-    Papa.parse(fundamentyUrl, { download:true, header:true, complete:function(results){
-      fundamentyId=[]; fundamentyFoto={};
+  function loadFundamenty(){
+    Papa.parse(fundamentyUrl, { download:true, header:true, complete: results => {
+      fundamentyId = []; fundamentyFoto = {};
       results.data.forEach(row=>{
         const id = String(row['Numer odtworzonego fundamentu  np. A010123 albo 1050123']||'').toUpperCase().trim();
-        const link = row['Zdjęcie odtworzonego fundamentu'];
-        if(id) { fundamentyId.push(id); if(link && link.includes("open?id=")){ const imgId = link.split("id=")[1]; fundamentyFoto[id] = `https://drive.google.com/thumbnail?id=${imgId}&sz=w500`; } }
+        const link = row['Zdjęcie odtworzonego fundamentu'] || row['Zdjęcie fundamentu'];
+        if(id){
+          fundamentyId.push(id);
+          if(link) fundamentyFoto[id] = driveThumb(link);
+        }
       });
+      // Po załadowaniu wszystkich trzech źródeł odświeżamy markery i sidebar
       updateMarkers();
+      createSidebar();
     }});
   }
 
+  // --- filtry: strefy / trasy ---
   function updateStrefy(){
-    const strefy = [...new Set(parkomatyData.map(p=>p.strefa))].sort();
-    const select = document.getElementById('strefaSelect'); select.innerHTML='';
-    strefy.forEach(s=>{ const option=document.createElement('option'); option.value=s; option.text=s; select.appendChild(option); });
-    select.addEventListener('change',()=>{ updateMarkers(); createSidebar(); });
+    const strefy = [...new Set(parkomatyData.map(p => p.strefa))].sort();
+    const sel = document.getElementById('strefaSelect'); sel.innerHTML = '';
+    strefy.forEach(s => {
+      const opt = document.createElement('option'); opt.value = s; opt.textContent = s; sel.appendChild(opt);
+    });
   }
-
   function updateTrasy(){
-    const trasy = [...new Set(parkomatyData.map(p=>p.trasa))].sort();
-    const select = document.getElementById('trasaSelect'); select.innerHTML='';
-    trasy.forEach(t=>{ const option=document.createElement('option'); option.value=t; option.text=t; select.appendChild(option); });
-    select.addEventListener('change',()=>{ updateMarkers(); createSidebar(); });
+    const trasy = [...new Set(parkomatyData.map(p => p.trasa))].sort();
+    const sel = document.getElementById('trasaSelect'); sel.innerHTML = '';
+    trasy.forEach(t => {
+      const opt = document.createElement('option'); opt.value = t; opt.textContent = t; sel.appendChild(opt);
+    });
   }
 
-  function updateMarkers(){
-  const selectedStrefy = Array.from(document.getElementById('strefaSelect').selectedOptions).map(o=>o.value);
-  const selectedTrasy = Array.from(document.getElementById('trasaSelect').selectedOptions).map(o=>o.value);
+  document.getElementById('strefaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
+  document.getElementById('trasaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
 
-  parkomatyData.forEach(p=>{
-    const kod = (p.kod||'').toUpperCase().trim();
-    const numer = (p.numer||'').toUpperCase().trim();
-    if(!kod && !numer) return;
-
-    if((selectedStrefy.length>0 && !selectedStrefy.includes(p.strefa)) ||
-       (selectedTrasy.length>0 && !selectedTrasy.includes(p.trasa))) {
-      const key = kod+'_'+numer;
-      if(markersMap[key]) { mapa.removeLayer(markersMap[key]); delete markersMap[key]; }
-      return;
+  // --- usuń wszystkie markery (czyszczenie) ---
+  function clearMarkers(){
+    for(const k in markersMap){
+      try { mapa.removeLayer(markersMap[k]); } catch(e){}
     }
+    markersMap = {};
+  }
 
-    const isFundament = fundamentyId.includes(kod) || fundamentyId.includes(numer);
-    const isZdemontowany = zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer);
-    const kolor = isFundament?'black':isZdemontowany?'red':'green';
+  // --- aktualizacja markerów (tworzymy tylko widoczne wg filtrów) ---
+  function updateMarkers(){
+    // najpierw usuń istniejące markery (łatwiejsze i bez ryzyka duplikatów)
+    clearMarkers();
 
-    const fotoDem = zdemontowaneFoto[kod] || zdemontowaneFoto[numer] || '';
-    const fotoFund = fundamentyFoto[kod] || fundamentyFoto[numer] || '';
+    // pobierz wybrane filtry
+    const selectedStrefy = Array.from(document.getElementById('strefaSelect').selectedOptions).map(o=>o.value);
+    const selectedTrasy = Array.from(document.getElementById('trasaSelect').selectedOptions).map(o=>o.value);
 
-    let popupContent = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
+    parkomatyData.forEach(p => {
+      const kod = (p.kod||'').toUpperCase().trim();
+      const numer = (p.numer||'').toUpperCase().trim();
+      if(!kod && !numer) return;
+
+      // filtruj
+      if(selectedStrefy.length && !selectedStrefy.includes(p.strefa)) return;
+      if(selectedTrasy.length && !selectedTrasy.includes(p.trasa)) return;
+
+      const isFundament = fundamentyId.includes(kod) || fundamentyId.includes(numer);
+      const isZdemontowany = zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer);
+      const kolor = isFundament ? 'black' : (isZdemontowany ? 'red' : 'green');
+
+      const fotoDem = zdemontowaneFoto[kod] || zdemontowaneFoto[numer] || '';
+      const fotoFund = fundamentyFoto[kod] || fundamentyFoto[numer] || '';
+
+      let popupContent = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
 <b>Adres:</b> ${p.adres}<br/>
 <b>Strefa:</b> ${p.strefa}<br/>
 <b>Trasa:</b> ${p.trasa}`;
 
-    if(fotoDem){
-      popupContent += `<br><a href="${fotoDem}" target="_blank">
-<img src="${fotoDem}" style="width:100px; height:auto; cursor:pointer;" referrerpolicy="no-referrer" alt="Zdjęcie demontażu">
-</a>`;
-    }
-    if(fotoFund){
-      popupContent += `<br><a href="${fotoFund}" target="_blank">
-<img src="${fotoFund}" style="width:100px; height:auto; cursor:pointer;" referrerpolicy="no-referrer" alt="Zdjęcie fundamentu">
-</a>`;
-    }
+      if(fotoDem){
+        popupContent += `<br><a href="${fotoDem}" target="_blank" rel="noopener"><img src="${fotoDem}" style="max-width:180px;height:auto;border-radius:4px;margin-top:6px;"></a>`;
+      }
+      if(fotoFund){
+        popupContent += `<br><a href="${fotoFund}" target="_blank" rel="noopener"><img src="${fotoFund}" style="max-width:180px;height:auto;border-radius:4px;margin-top:6px;"></a>`;
+      }
 
-    // Tylko dla aktywnych parkomatów (zielonych) – dodajemy przycisk
-    if(!isZdemontowany && !isFundament){
-      const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${numer}`;
-      popupContent += `<br><button class="upload-btn" data-url="${formUrl}"
-        style="margin-top:5px;padding:5px 10px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
-        Wgraj zdjęcie z demontażu</button>`;
-    }
+      if(!isZdemontowany && !isFundament){
+        const valueForForm = encodeURIComponent(numer || kod);
+        const formUrl = `${googleFormBase}&${googleFormEntry}=${valueForForm}`;
+        popupContent += `<br><a class="upload-btn" href="${formUrl}" target="_blank" rel="noopener">Wgraj zdjęcie z demontażu</a>`;
+      }
 
-    const key = kod+'_'+numer;
-    if(markersMap[key]){
-      markersMap[key].setStyle({color:kolor});
-      markersMap[key].bindPopup(popupContent);
-    } else {
-      const marker = L.circleMarker([p.lat,p.lon],{radius:8,color:kolor,fillOpacity:0.8}).addTo(mapa);
-      marker.bindPopup(popupContent);
-      markersMap[key]=marker;
-    }
-  });
-}
+      // dodaj marker
+      const key = kod + '_' + numer;
+      const marker = L.circleMarker([p.lat, p.lon], { radius:8, color: kolor, fillOpacity:0.85 }).addTo(mapa);
+      marker.bindPopup(popupContent, { maxWidth: 300 });
 
-// Dodajemy event globalny do obsługi przycisku w popupie
-mapa.on('popupopen', function(e) {
-  const popupNode = e.popup.getElement();
-  const btn = popupNode.querySelector('.upload-btn');
-  if(btn){
-    btn.addEventListener('click', ()=>{
-      window.open(btn.dataset.url, '_blank');
+      // tooltip/etykieta (numer/kod) — z góry przypięty, ale domyślnie zamykany jeśli zoom < 17
+      marker.bindTooltip(`${p.numer || p.kod}`, { permanent: true, direction: "top", className: "parkomat-label" });
+
+      // domyślnie ukryj tooltip, jeśli aktualny zoom mniejszy niż próg
+      if(mapa.getZoom() < 17) marker.closeTooltip(); else marker.openTooltip();
+
+      markersMap[key] = marker;
     });
-  }
-});
 
-  function createSidebar(filter=''){
-    const container=document.getElementById('sidebarContent'); container.innerHTML='';
-    const grouped={};
-    parkomatyData.forEach(p=>{
-      const text=(p.kod+' '+p.numer+' '+p.adres).toUpperCase();
-      if(filter && !text.includes(filter.toUpperCase())) return;
-      if(!grouped[p.strefa]) grouped[p.strefa]=[];
+    // aktualizuj sidebar (lista)
+    createSidebar(document.getElementById('sidebarSearch').value || '');
+  }
+
+  // --- Sidebar (lista) ---
+  function createSidebar(filterText = ''){
+    const container = document.getElementById('sidebarContent'); container.innerHTML = '';
+    const grouped = {};
+
+    parkomatyData.forEach(p => {
+      const text = `${p.kod} ${p.numer} ${p.adres}`.toUpperCase();
+      if(filterText && !text.includes(filterText.toUpperCase())) return;
+      if(!grouped[p.strefa]) grouped[p.strefa] = [];
       grouped[p.strefa].push(p);
     });
-    for(const strefa in grouped){
-      const group=document.createElement('div'); group.className='strefa-group';
-      const header=document.createElement('div'); header.className='strefa-header'; header.textContent=`Strefa: ${strefa}`;
-      const list=document.createElement('div'); list.style.display='none';
-      header.addEventListener('click',()=>{ list.style.display=list.style.display==='none'?'block':'none'; });
+
+    for(const strefa of Object.keys(grouped).sort()){
+      const group = document.createElement('div'); group.className = 'strefa-group';
+      const header = document.createElement('div'); header.className = 'strefa-header'; header.textContent = `Strefa: ${strefa}`;
+      const list = document.createElement('div'); list.style.display = grouped[strefa].length === 1 ? 'block' : 'none';
+      header.addEventListener('click', ()=>{ list.style.display = (list.style.display==='none' ? 'block' : 'none'); });
       grouped[strefa].forEach(p=>{
-        const item=document.createElement('div'); item.className='parkomat-link'; item.textContent=`${p.kod} / ${p.numer}`;
-        item.addEventListener('click',()=>{
-          mapa.setView([p.lat,p.lon],16);
-          if(window.tempTooltip){ mapa.removeLayer(window.tempTooltip); clearTimeout(window.tooltipTimeout); }
-          window.tempTooltip = L.tooltip({ permanent:true, direction:'top', className:'custom-tooltip' })
-            .setLatLng([p.lat,p.lon])
-            .setContent(`<b>${p.kod} / ${p.numer}</b><br>${p.adres}`).addTo(mapa);
-          window.tooltipTimeout=setTimeout(()=>{ mapa.removeLayer(window.tempTooltip); window.tempTooltip=null; },5000);
-          document.querySelectorAll(".parkomat-link").forEach(el=>el.classList.remove("active"));
-          item.classList.add("active");
+        const item = document.createElement('div'); item.className = 'parkomat-link'; item.textContent = `${p.kod} / ${p.numer} — ${p.adres}`;
+        item.addEventListener('click', ()=>{
+          mapa.setView([p.lat, p.lon], 17);
+          const key = (p.kod||'') + '_' + (p.numer||'');
+          if(markersMap[key]){
+            markersMap[key].openPopup();
+            // highlight
+            document.querySelectorAll('.parkomat-link').forEach(el=>el.classList.remove('active'));
+            item.classList.add('active');
+          }
         });
         list.appendChild(item);
       });
-      group.appendChild(header); group.appendChild(list); container.appendChild(group);
+      group.appendChild(header);
+      group.appendChild(list);
+      container.appendChild(group);
     }
   }
 
+  // search in sidebar
   document.getElementById('sidebarSearch').addEventListener('input', function(){ createSidebar(this.value); });
-  document.getElementById('sidebarToggle').addEventListener('click',()=>sidebar.classList.toggle('open'));
-  document.getElementById('sidebarClose').addEventListener('click',()=>sidebar.classList.remove('open'));
-  document.addEventListener('click', function(e){
-    const sidebar = document.getElementById('sidebar'), toggle = document.getElementById('sidebarToggle');
-    if(sidebar.classList.contains('open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) sidebar.classList.remove('open');
-  });
-  document.getElementById('refreshBtn').addEventListener('click', loadZdemontowane);
 
+  // --- tooltip show/hide on zoom (global, jednorazowy listener) ---
+  mapa.on('zoomend', ()=>{
+    const zoom = mapa.getZoom();
+    for(const k in markersMap){
+      try {
+        const m = markersMap[k];
+        if(zoom >= 17) m.openTooltip();
+        else m.closeTooltip();
+      } catch(e){}
+    }
+  });
+
+  // --- sidebar open/close ---
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('sidebarToggle').addEventListener('click', ()=> {
+    sidebar.classList.toggle('open');
+    setTimeout(()=> mapa.invalidateSize(), 300);
+  });
+  document.getElementById('sidebarClose').addEventListener('click', ()=> { sidebar.classList.remove('open'); setTimeout(()=> mapa.invalidateSize(), 300); });
+
+  // --- refresh button (ponownie pobiera wszystkie CSV) ---
+  document.getElementById('refreshBtn').addEventListener('click', ()=> {
+    loadParkomaty(); // loadParkomaty -> loadZdemontowane -> loadFundamenty -> updateMarkers
+  });
+
+  // --- init ---
   loadParkomaty();
+
 });
 </script>
 </body>
