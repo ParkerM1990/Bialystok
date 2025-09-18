@@ -145,10 +145,21 @@ document.addEventListener('DOMContentLoaded', function () {
     strefy.forEach(s => { const opt = document.createElement('option'); opt.value = s; opt.textContent = s; sel.appendChild(opt); });
   }
   function updateTrasy(){
-    const trasy = [...new Set(parkomatyData.map(p => p.trasa))].sort();
+    const trasy = [...new Set(parkomatyData.map(p => p.trasa))];
+    trasy.sort((a, b) => {
+        const na = parseInt(a, 10);
+        const nb = parseInt(b, 10);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b); // jeśli nie da się sparsować na liczbę
+    });
     const sel = document.getElementById('trasaSelect'); sel.innerHTML = '';
-    trasy.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.textContent = t; sel.appendChild(opt); });
-  }
+    trasy.forEach(t => { 
+        const opt = document.createElement('option'); 
+        opt.value = t; 
+        opt.textContent = t; 
+        sel.appendChild(opt); 
+    });
+}
   document.getElementById('strefaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
   document.getElementById('trasaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
 
