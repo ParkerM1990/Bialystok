@@ -34,18 +34,6 @@
       color: #000;
       box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
-    .upload-btn {
-      margin-top:6px;
-      display:inline-block;
-      padding:6px 10px;
-      background:#007bff;
-      color:#fff;
-      border:none;
-      border-radius:4px;
-      cursor:pointer;
-      text-decoration:none;
-      font-size:14px;
-    }
     @media (max-width:700px){
       #sidebar { width: 260px; }
       #filter { right: 6px; top:56px; }
@@ -107,17 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch(e){ return link; }
   }
 
-  let locationMarker = null;
-  function watchLocation(){
-    if(!navigator.geolocation) return;
-    navigator.geolocation.watchPosition(pos=>{
-      const lat = pos.coords.latitude, lon = pos.coords.longitude;
-      if(locationMarker) mapa.removeLayer(locationMarker);
-      locationMarker = L.circleMarker([lat, lon], { radius:8, color:'blue', fillOpacity:0.7 }).addTo(mapa).bindPopup('Twoja lokalizacja');
-    }, ()=>{}, { enableHighAccuracy:true });
-  }
-  watchLocation();
-
   function loadParkomaty(){
     Papa.parse(parkomatyUrl, { download:true, header:true, complete: results => {
       parkomatyData = results.data.map(row => ({
@@ -154,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Papa.parse(fundamentyUrl, { download:true, header:true, complete: results => {
       fundamentyId = [];
       results.data.forEach(row=>{
-        const id = String(row['Numer parkomatu']||'').toUpperCase().trim();
+        const id = String(row['Numer odtworzonego fundamentu  np. A010123 albo 1050123']||'').toUpperCase().trim();
         if(id) fundamentyId.push(id);
       });
       updateMarkers();
@@ -236,37 +213,73 @@ document.addEventListener('DOMContentLoaded', function () {
       if(!grouped[p.strefa]) grouped[p.strefa] = [];
       grouped[p.strefa].push(p);
     });
+
     for(const strefa of Object.keys(grouped).sort()){
       const group = document.createElement('div'); group.className = 'strefa-group';
       const header = document.createElement('div'); header.className = 'strefa-header'; header.textContent = `Strefa: ${strefa}`;
       const list = document.createElement('div'); list.style.display = grouped[strefa].length === 1 ? 'block' : 'none';
       header.addEventListener('click', ()=>{ list.style.display = (list.style.display==='none' ? 'block' : 'none'); });
+
       grouped[strefa].forEach(p=>{
-        const item = document.createElement('div'); item.className = 'parkomat-link'; item.textContent = `${p.kod} / ${p.numer} — ${p.adres}`;
+        const item = document.createElement('div'); 
+        item.className = 'parkomat-link'; 
+        item.textContent = `${p.kod} / ${p.numer} — ${p.adres}`;
+
+        // kliknięcie otwiera popup i marker
         item.addEventListener('click', ()=>{
           mapa.setView([p.lat, p.lon], 17);
           const key = (p.kod||'') + '_' + (p.numer||'');
-          if(markersMap[key]){
-            markersMap[key].openPopup();
-            document.querySelectorAll('.parkomat-link').forEach(el=>el.classList.remove('active'));
-            item.classList.add('active');
-          }
+          if(markersMap[key]) markersMap[key].openPopup();
+          document.querySelectorAll('.parkomat-link').forEach(el=>el.classList.remove('active'));
+          item.classList.add('active');
         });
+
+        // Dodanie linku do formularza w sidebarze
+        const isKolekcja = fundamentyId.includes(p.kod) || fundamentyId.includes(p.numer);
+        if(isKolekcja){
+          const valueForForm = encodeURIComponent(p.numer || p.kod);
+          const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+          const linkEl = document.createElement('a');
+          linkEl.href = formUrl;
+          linkEl.target = "_blank";
+          linkEl.textContent = "📦 Wykonana kolekcja";
+          linkEl.style.display = "inline-block";
+          linkEl.style.marginLeft = "8px";
+          linkEl.style.color = "#000";
+          item.appendChild(linkEl);
+        }
+
         list.appendChild(item);
       });
-      group.appendChild(header); group.appendChild(list);
+
+      group.appendChild(header);
+      group.appendChild(list);
       container.appendChild(group);
     }
   }
 
-  document.getElementById('sidebarToggle').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.add('open'); });
-  document.getElementById('sidebarClose').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.remove('open'); });
-  document.getElementById('sidebarSearch').addEventListener('input', e => { createSidebar(e.target.value); });
+  document.getElementById('sidebarSearch').addEventListener('input', (e)=>{ createSidebar(e.target.value); });
+
+  document.getElementById('sidebarToggle').addEventListener('click', ()=>{ 
+    document.getElementById('sidebar').classList.add('open'); 
+    document.getElementById('sidebar').setAttribute('aria-hidden','false');
+  });
+  document.getElementById('sidebarClose').addEventListener('click', ()=>{ 
+    document.getElementById('sidebar').classList.remove('open'); 
+    document.getElementById('sidebar').setAttribute('aria-hidden','true');
+  });
 
   document.getElementById('refreshBtn').addEventListener('click', ()=>{ loadParkomaty(); });
 
-  loadParkomaty();
+  mapa.on('zoomend', ()=>{ 
+    const z = mapa.getZoom();
+    for(const k in markersMap){
+      const m = markersMap[k];
+      if(m.getTooltip()) z<15 ? m.closeTooltip() : m.openTooltip();
+    }
+  });
 
+  loadParkomaty();
 });
 </script>
 </body>
