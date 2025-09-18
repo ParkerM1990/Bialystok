@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const na = parseInt(a, 10);
         const nb = parseInt(b, 10);
         if (!isNaN(na) && !isNaN(nb)) return na - nb;
-        return a.localeCompare(b); // jeśli nie da się sparsować na liczbę
+        return a.localeCompare(b);
     });
     const sel = document.getElementById('trasaSelect'); sel.innerHTML = '';
     trasy.forEach(t => { 
@@ -159,7 +159,8 @@ document.addEventListener('DOMContentLoaded', function () {
         opt.textContent = t; 
         sel.appendChild(opt); 
     });
-}
+  }
+
   document.getElementById('strefaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
   document.getElementById('trasaSelect').addEventListener('change', ()=> { updateMarkers(); createSidebar(); });
 
@@ -180,36 +181,13 @@ document.addEventListener('DOMContentLoaded', function () {
       if(selectedStrefy.length && !selectedStrefy.includes(p.strefa)) return;
       if(selectedTrasy.length && !selectedTrasy.includes(p.trasa)) return;
 
-      const isKolekcja = fundamentyId.includes(kod) || fundamentyId.includes(numer);
-      const isZdemontowany = zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer);
-      const kolor = isKolekcja ? 'black' : (isZdemontowany ? 'red' : 'green');
+      let kolor;
+      if (zdemontowaneId.includes(kod) || zdemontowaneId.includes(numer)) kolor='red';
+      else if (fundamentyId.includes(kod) || fundamentyId.includes(numer)) kolor='black';
+      else kolor='green';
+
       const fotoDem = zdemontowaneFoto[kod] || zdemontowaneFoto[numer] || '';
-
-      let popupContent = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
-<b>Adres:</b> ${p.adres}<br/>
-<b>Strefa:</b> ${p.strefa}<br/>
-<b>Trasa:</b> ${p.trasa}`;
-
-      const valueForForm = encodeURIComponent(numer || kod);
-
-      // Aktywny parkomat - dwa linki
-      if(kolor === 'green'){
-        const formKolekcja = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-        popupContent += `<br><a href="${formKolekcja}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none; display:block; margin-bottom:4px;">📦 Wykonana kolekcja</a>`;
-        const formZdjecie = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-        popupContent += `<br><a href="${formZdjecie}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
-      }
-
-      // Kolekcja - tylko zdjęcie
-      if(kolor === 'black'){
-        const formZdjecie = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-        popupContent += `<br><a href="${formZdjecie}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
-      }
-
-      // Zdemontowany - zdjęcie z CSV
-      if(kolor === 'red' && fotoDem){
-        popupContent += `<br><a href="${fotoDem}" target="_blank" rel="noopener"><img src="${fotoDem}" style="max-width:180px;height:auto;border-radius:4px;margin-top:6px;"></a>`;
-      }
+      const popupContent = buildPopupContent(p, kolor, fotoDem);
 
       const key = kod + '_' + numer;
       const marker = L.circleMarker([p.lat, p.lon], { radius:8, color: kolor, fillOpacity:0.85 }).addTo(mapa);
@@ -220,6 +198,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     createSidebar(document.getElementById('sidebarSearch').value || '');
+  }
+
+  function buildPopupContent(p, kolor, fotoDem){
+    const valueForForm = encodeURIComponent(p.numer || p.kod);
+    let content = `<b>Parkomat:</b> ${p.kod} / ${p.numer}<br/>
+<b>Adres:</b> ${p.adres}<br/>
+<b>Strefa:</b> ${p.strefa}<br/>
+<b>Trasa:</b> ${p.trasa}`;
+
+    if(kolor==='green'){
+      content += `<br><a href="https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}" target="_blank" style="color:white; background:#000; padding:4px 8px; border-radius:4px; text-decoration:none; display:block; margin-bottom:4px;">📦 Wykonana kolekcja</a>`;
+      content += `<br><a href="https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
+    }
+
+    if(kolor==='black'){
+      content += `<br><a href="https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}" target="_blank" style="color:white; background:#007bff; padding:4px 8px; border-radius:4px; text-decoration:none;">📷 Wgraj zdjęcie z demontażu</a>`;
+    }
+
+    if(kolor==='red' && fotoDem){
+      content += `<br><a href="${fotoDem}" target="_blank" rel="noopener"><img src="${fotoDem}" style="max-width:180px;height:auto;border-radius:4px;margin-top:6px;"></a>`;
+    }
+
+    return content;
   }
 
   function createSidebar(filterText = ''){
@@ -252,40 +253,42 @@ document.addEventListener('DOMContentLoaded', function () {
           item.classList.add('active');
         });
 
-        // Linki w sidebarze
-        const kolor = fundamentyId.includes(p.kod) || fundamentyId.includes(p.numer) ? 'black' :
-                       zdemontowaneId.includes(p.kod) || zdemontowaneId.includes(p.numer) ? 'red' : 'green';
+        // linki w sidebarze
+        const kolor = zdemontowaneId.includes(p.kod) || zdemontowaneId.includes(p.numer) ? 'red' :
+                       fundamentyId.includes(p.kod) || fundamentyId.includes(p.numer) ? 'black' : 'green';
         const valueForForm = encodeURIComponent(p.numer || p.kod);
         if(kolor==='green'){
-          const linkK = document.createElement('a');
-          linkK.href = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-          linkK.target='_blank'; linkK.textContent='📦 Wykonana kolekcja'; linkK.style.display='block'; item.appendChild(linkK);
+          const a1 = document.createElement('a'); a1.href = `https://docs.google.com/forms/d/e/1FAIpQLSd-g7stYOCq93aG60gBXkEsQYJpHuDDFNApuMlItsuBHWC29A/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+          a1.target='_blank'; a1.textContent='📦 Wykonana kolekcja'; a1.style.display='block';
+          item.appendChild(a1);
+          const a2 = document.createElement('a'); a2.href = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+          a2.target='_blank'; a2.textContent='📷 Wgraj zdjęcie'; a2.style.display='block';
+          item.appendChild(a2);
         }
-        if(kolor!=='red'){ // zielony i czarny
-          const linkF = document.createElement('a');
-          linkF.href = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
-          linkF.target='_blank'; linkF.textContent='📷 Wgraj zdjęcie z demontażu'; linkF.style.display='block'; item.appendChild(linkF);
+        if(kolor==='black'){
+          const a = document.createElement('a'); a.href = `https://docs.google.com/forms/d/e/1FAIpQLSccRPbxKchRogcc5E3q3pPK94ulnG--Eczpd9LzFSgfN_M2GQ/viewform?usp=pp_url&entry.1756483819=${valueForForm}`;
+          a.target='_blank'; a.textContent='📷 Wgraj zdjęcie'; a.style.display='block';
+          item.appendChild(a);
         }
+
         list.appendChild(item);
       });
 
-      group.appendChild(header); group.appendChild(list);
+      group.appendChild(header);
+      group.appendChild(list);
       container.appendChild(group);
-    }
+    });
   }
 
-  document.getElementById('sidebarToggle').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.add('open'); });
-  document.getElementById('sidebarClose').addEventListener('click', ()=>{ document.getElementById('sidebar').classList.remove('open'); });
-  document.getElementById('sidebarSearch').addEventListener('input', e=>{ createSidebar(e.target.value); });
+  document.getElementById('sidebarToggle').addEventListener('click', ()=>document.getElementById('sidebar').classList.add('open'));
+  document.getElementById('sidebarClose').addEventListener('click', ()=>document.getElementById('sidebar').classList.remove('open'));
+  document.getElementById('sidebarSearch').addEventListener('input', e=>createSidebar(e.target.value));
 
-  document.getElementById('refreshBtn').addEventListener('click', ()=>{
-    loadParkomaty();
-    alert('Dane zostały odświeżone!');
-  });
+  document.getElementById('refreshBtn').addEventListener('click', ()=>loadParkomaty());
 
   loadParkomaty();
+
 });
 </script>
-
 </body>
 </html>
